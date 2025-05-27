@@ -1,4 +1,4 @@
-module ozon-test2
+module github.com/golovanevvs/ozon-route-256-contest-go
 
 go 1.24.0
 
