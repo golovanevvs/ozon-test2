@@ -16,19 +16,21 @@ import (
 )
 
 func TestTask(t *testing.T) {
+	openAnyFile := false
 	for i := 1; i <= 12; i++ {
-		file, err := os.Open(fmt.Sprintf("./tests/%d", i))
+		file, err := os.Open(fmt.Sprintf("../tests/%d", i))
 		if err != nil {
 			fmt.Printf("Ошибка открытия файла: %d\n", i)
 			continue
 		}
 		defer file.Close()
+		openAnyFile = true
 
 		t.Run(fmt.Sprintf("Test: %d", i), func(t *testing.T) {
 			fmt.Printf("Тест %d\n", i)
 			in := bufio.NewReader(file)
 
-			expecteds, err := os.ReadFile(fmt.Sprintf("./tests/%d.a", i))
+			expecteds, err := os.ReadFile(fmt.Sprintf("../tests/%d.a", i))
 			require.Nil(t, err)
 
 			var buffer bytes.Buffer
@@ -50,6 +52,7 @@ func TestTask(t *testing.T) {
 			}
 		})
 	}
+	require.True(t, openAnyFile)
 }
 
 // func BenchmarkTask3(b *testing.B) {

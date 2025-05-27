@@ -12,14 +12,14 @@ type exchangeRate struct {
 	from   string
 	to     string
 	bankID int
-	rate   float64 // m/n - коэффициент обмена
+	rate   float64
 }
 
 func Task() {
 	// Раскомментить при запуске на своей машине, закомментить при отправке на платформу
 	// В папку tests скопировать тесты с платформы
 	// Использовать для тестирования на своей машине, используя данные из указанного файла
-	file, err := os.Open("./tests/5")
+	file, err := os.Open("./tests/1")
 	if err != nil {
 		fmt.Printf("Ошибка открытия файла: %s\n", err.Error())
 	}
@@ -31,11 +31,11 @@ func Task() {
 	out := bufio.NewWriter(os.Stdout)
 	defer out.Flush()
 
-	// Основное решение задачи # (вариант #)
+	// Основное решение задачи
 	Run(in, out)
 }
 
-// Run## - основное решение задачи # (вариант #)
+// Run - основное решение задачи
 // Менять какие-либо аргументы или возвращаемые значения не требуется
 func Run(in *bufio.Reader, out *bufio.Writer) {
 	// t - количество входных данных (подзадач)
@@ -90,14 +90,13 @@ func Run(in *bufio.Reader, out *bufio.Writer) {
 				})
 			}
 		}
-		// fmt.Println(allRates)
 		// Запуск и вывод в out решения подзадачи t
 		// В зависимости от условия задачи алгоритм вывода может потребовать доработки
 		fmt.Fprintf(out, "%g\r\n", tTaskSolving(allRates, bankCount, "RUB", "USD", 1))
 	}
 }
 
-// tTaskSolving## - функция для решения подзадачи t задачи # (вариант #)
+// tTaskSolving - функция для решения подзадачи t задачи
 // В зависимости от условия задачи, необходимо указать требуемые аргументы и возвращаемое значение функции
 func tTaskSolving(rates []exchangeRate, bankCount int, from, to string, initialAmount float64) (maxTo float64) {
 	maxAmount := 0.0
