@@ -4,25 +4,22 @@ import (
 	"bufio"
 	"fmt"
 	"os"
-	"slices"
 	"strconv"
 	"strings"
 )
 
-type bank struct {
-	rd float64
-	re float64
-	dr float64
-	de float64
-	er float64
-	ed float64
+type exchangeRate struct {
+	from   string
+	to     string
+	bankID int
+	rate   float64 // m/n - коэффициент обмена
 }
 
 func Task() {
 	// Раскомментить при запуске на своей машине, закомментить при отправке на платформу
 	// В папку tests скопировать тесты с платформы
 	// Использовать для тестирования на своей машине, используя данные из указанного файла
-	file, err := os.Open("../internal/task2/tests/1")
+	file, err := os.Open("../internal/task2/tests/5")
 	if err != nil {
 		fmt.Printf("Ошибка открытия файла: %s\n", err.Error())
 	}
@@ -46,13 +43,14 @@ func Run(in *bufio.Reader, out *bufio.Writer) {
 	fmt.Fscanln(in, &t)
 
 	// Решение t подзадач
-	for i := 0; i < t; i++ {
+	for range t {
 		// Примеры чтения параметров подзадачи i
-		banks := make([]bank, 3)
+		bankCount := 3
 
-		for j := 0; j < 3; j++ {
-			for k := 0; k < 6; k++ {
+		var allRates []exchangeRate
 
+		for bankID := range bankCount {
+			for j := range 6 {
 				// Чтение из одной строки нескольких значений, разделённых пробелом
 				// var s string
 				// fmt.Fscan(in, &s)
@@ -61,75 +59,72 @@ func Run(in *bufio.Reader, out *bufio.Writer) {
 				// Чтение целой строки до переноса
 				str1, _ := in.ReadString('\n')
 				// Удаление символа \n (на некоторых машинах надо удалить два символа \r\n)
-				str := strings.Trim(str1, "\n")
-				// str := strings.Trim(str1, "\r\n")
+				// str := strings.Trim(str1, "\n")
+				str := strings.Trim(str1, "\r\n")
 				// Для избежания ошибки выведем str (закомментить при использовании шаблона)
-				valueStrSlice := strings.Split(str, " ")
-				value1, _ := strconv.ParseFloat(valueStrSlice[0], 64)
-				value2, _ := strconv.ParseFloat(valueStrSlice[1], 64)
-				value := value2 / value1
-				switch k {
+				values := strings.Split(str, " ")
+				n, _ := strconv.Atoi(values[0])
+				m, _ := strconv.Atoi(values[1])
+
+				var from, to string
+				switch j {
 				case 0:
-					banks[j].rd = value
+					from, to = "RUB", "USD"
 				case 1:
-					banks[j].re = value
+					from, to = "RUB", "EUR"
 				case 2:
-					banks[j].dr = value
+					from, to = "USD", "RUB"
 				case 3:
-					banks[j].de = value
+					from, to = "USD", "EUR"
 				case 4:
-					banks[j].er = value
+					from, to = "EUR", "RUB"
 				case 5:
-					banks[j].ed = value
+					from, to = "EUR", "USD"
 				}
 
-				// Запуск и вывод в out решения подзадачи t
-				// В зависимости от условия задачи алгоритм вывода может потребовать доработки
+				allRates = append(allRates, exchangeRate{
+					from:   from,
+					to:     to,
+					bankID: bankID,
+					rate:   float64(m) / float64(n),
+				})
 			}
 		}
-		fmt.Fprintln(out, tTaskSolving(banks))
+		// fmt.Println(allRates)
+		// Запуск и вывод в out решения подзадачи t
+		// В зависимости от условия задачи алгоритм вывода может потребовать доработки
+		fmt.Fprintf(out, "%g\r\n", tTaskSolving(allRates, bankCount, "RUB", "USD", 1))
 	}
 }
 
 // tTaskSolving## - функция для решения подзадачи t задачи # (вариант #)
 // В зависимости от условия задачи, необходимо указать требуемые аргументы и возвращаемое значение функции
-func tTaskSolving(banks []bank) (maxD float64) {
-	maxDs := make([]float64, 0)
-	for i := range banks {
-		var a0, a1, a2 int
-		switch i {
-		case 0:
-			a0 = 0
-			a1 = 1
-			a2 = 2
-		case 1:
-			a1 = 0
-			a0 = 1
-			a2 = 2
-		case 2:
-			a2 = 0
-			a1 = 1
-			a0 = 2
+func tTaskSolving(rates []exchangeRate, bankCount int, from, to string, initialAmount float64) (maxTo float64) {
+	maxAmount := 0.0
+	visitedBanks := make([]bool, bankCount)
+
+	var dfs func(currentCurrency string, currentAmount float64, depth int)
+	dfs = func(currentCurrency string, currentAmount float64, depth int) {
+		if currentCurrency == to {
+			if currentAmount > maxAmount {
+				maxAmount = currentAmount
+			}
 		}
-		d1 := banks[a2].rd + banks[a1].dr + banks[a0].rd
-		maxDs = append(maxDs, d1)
-		d2 := banks[a2].rd + banks[a1].er + banks[a0].rd
-		maxDs = append(maxDs, d2)
-		d3 := banks[a2].rd + banks[a1].de + banks[a0].ed
-		maxDs = append(maxDs, d3)
-		d4 := banks[a1].rd + banks[a2].dr + banks[a0].rd
-		maxDs = append(maxDs, d4)
-		d5 := banks[a1].rd + banks[a2].er + banks[a0].rd
-		maxDs = append(maxDs, d5)
-		d6 := banks[a1].rd + banks[a2].de + banks[a0].ed
-		maxDs = append(maxDs, d6)
-		d7 := banks[a1].re + banks[a0].ed
-		maxDs = append(maxDs, d7)
-		d8 := banks[a2].re + banks[a0].ed
-		maxDs = append(maxDs, d8)
-		d9 := banks[a0].rd
-		maxDs = append(maxDs, d9)
+
+		if depth >= bankCount {
+			return
+		}
+
+		for _, rate := range rates {
+			if rate.from == currentCurrency && !visitedBanks[rate.bankID] {
+				visitedBanks[rate.bankID] = true
+				newAmount := currentAmount * rate.rate
+				dfs(rate.to, newAmount, depth+1)
+				visitedBanks[rate.bankID] = false
+			}
+		}
 	}
 
-	return slices.Max(maxDs)
+	dfs(from, initialAmount, 0)
+	return maxAmount
 }
