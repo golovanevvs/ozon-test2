@@ -10,6 +10,7 @@ import (
 type sepStr struct {
 	str1  string
 	str2  string
+	color string
 	index int
 }
 
@@ -72,9 +73,7 @@ func Run(in *bufio.Reader, out *bufio.Writer) {
 // tTaskSolving - функция для решения подзадачи t задачи
 // В зависимости от условия задачи, необходимо указать требуемые аргументы и возвращаемое значение функции
 func tTaskSolving(datas []string) (count int) {
-	count = 0
 	sliceStr := make([]sepStr, len(datas))
-	visitedStr := make(map[int]bool)
 	for i, data := range datas {
 		str1 := make([]rune, 0, len(data)/2+1)
 		str2 := make([]rune, 0, len(data)/2)
@@ -88,17 +87,38 @@ func tTaskSolving(datas []string) (count int) {
 		sliceStr[i].index = i
 		sliceStr[i].str1 = string(str1)
 		sliceStr[i].str2 = string(str2)
+		sliceStr[i].color = "white"
 	}
-	index := 1
-	currentSlice := sliceStr
-	for idx := index; idx < len(currentSlice); idx++ {
-		if !visitedStr[currentSlice[0].index] && ((len(currentSlice[0].str1) > 0 && currentSlice[0].str1 == currentSlice[idx].str1) || (len(currentSlice[0].str2) > 0 && currentSlice[0].str2 == currentSlice[idx].str2)) {
-			count++
-		}
-		index -= 1
-		currentSlice = currentSlice[idx:]
-	}
-	visitedStr[currentSlice[0].index] = true
 
+	// fmt.Println("sliceStr", sliceStr)
+
+	count = 0
+	stack := stack{}
+	stack.push(0)
+
+	for !stack.isEmpty() {
+		i, _ := stack.pop()
+		// fmt.Println("Взяли из стека i:", i, "color:", sliceStr[i].color)
+		if sliceStr[i].color == "white" {
+			// fmt.Println("Покрасили в серый, положили в стек")
+			sliceStr[i].color = "gray"
+			stack.push(i)
+			for j := i + 1; j < len(sliceStr); j++ {
+				// fmt.Println("Смотрим вершину j исходящего ребра:", j, "color:", sliceStr[j].color)
+				if (len(sliceStr[i].str1) > 0 && sliceStr[i].str1 == sliceStr[j].str1) || (len(sliceStr[i].str2) > 0 && sliceStr[i].str2 == sliceStr[j].str2) {
+					count++
+				}
+				if sliceStr[j].color == "white" {
+					stack.push(j)
+					// fmt.Println("Положили в стек, т.к. цвет белый")
+				} else {
+					// fmt.Println("Не положили в стек, т.к. цвет не белый")
+				}
+			}
+		} else if sliceStr[i].color == "gray" {
+			// fmt.Println("Покрасили в чёрный")
+			sliceStr[i].color = "black"
+		}
+	}
 	return count
 }

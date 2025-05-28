@@ -6,7 +6,6 @@ import (
 	"fmt"
 	"io"
 	"os"
-	"strconv"
 	"strings"
 	"testing"
 
@@ -16,7 +15,7 @@ import (
 
 func TestTask(t *testing.T) {
 	openAnyFile := false
-	for i := 21; i <= 21; i++ {
+	for i := 1; i <= 21; i++ {
 		file, err := os.Open(fmt.Sprintf("../tests/%d", i))
 		if err != nil {
 			fmt.Printf("Ошибка открытия файла: %d\n", i)
@@ -25,7 +24,7 @@ func TestTask(t *testing.T) {
 		defer file.Close()
 		openAnyFile = true
 
-		t.Run(fmt.Sprintf("Test: %d", i), func(t *testing.T) {
+		t.Run(fmt.Sprintf("Test:%d", i), func(t *testing.T) {
 			fmt.Printf("Тест %d\n", i)
 			in := bufio.NewReader(file)
 
@@ -36,25 +35,49 @@ func TestTask(t *testing.T) {
 			out := bufio.NewWriter(&buffer)
 			Run(in, out)
 			out.Flush()
-			results, err := io.ReadAll(bufio.NewReader(&buffer))
+			actuals, err := io.ReadAll(bufio.NewReader(&buffer))
 			require.Nil(t, err)
 
 			sliceExpecteds := strings.Split(string(expecteds), "\r\n")
 			sliceExpecteds1 := sliceExpecteds[:len(sliceExpecteds)-1]
-			sliceResults := strings.Split(string(results), "\r\n")
-			sliceResults1 := sliceResults[:len(sliceResults)-1]
+			sliceActuals := strings.Split(string(actuals), "\n")
+			sliceActuals1 := sliceActuals[:len(sliceActuals)-1]
 			for j, expected := range sliceExpecteds1 {
-				exp, _ := strconv.Atoi(expected)
-				res, _ := strconv.Atoi(sliceResults1[j])
-				assert.Equal(t, exp, res)
+				actual := sliceActuals1[j]
+				assert.Equal(t, expected, actual)
 			}
 		})
 	}
 	require.True(t, openAnyFile)
 }
 
-// func BenchmarkTask3(b *testing.B) {
-// 	for i := 0; i < b.N; i++ {
-// 		Task3()
-// 	}
-// }
+func BenchmarkTask(b *testing.B) {
+	for b.Loop() {
+		test := 10
+		file, err := os.Open(fmt.Sprintf("../tests/%d", test))
+		if err != nil {
+			fmt.Printf("Ошибка открытия файла: %d\n", test)
+		}
+		defer file.Close()
+		in := bufio.NewReader(file)
+
+		expecteds, err := os.ReadFile(fmt.Sprintf("../tests/%d.a", test))
+		require.Nil(b, err)
+
+		var buffer bytes.Buffer
+		out := bufio.NewWriter(&buffer)
+		Run(in, out)
+		out.Flush()
+		actuals, err := io.ReadAll(bufio.NewReader(&buffer))
+		require.Nil(b, err)
+
+		sliceExpecteds := strings.Split(string(expecteds), "\r\n")
+		sliceExpecteds1 := sliceExpecteds[:len(sliceExpecteds)-1]
+		sliceActuals := strings.Split(string(actuals), "\n")
+		sliceActuals1 := sliceActuals[:len(sliceActuals)-1]
+		for j, expected := range sliceExpecteds1 {
+			actual := sliceActuals1[j]
+			assert.Equal(b, expected, actual)
+		}
+	}
+}
