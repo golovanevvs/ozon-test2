@@ -1,23 +1,19 @@
-package task31
+package task41
 
 import (
 	"bufio"
 	"fmt"
 	"os"
+	"regexp"
+	"strconv"
 	"strings"
 )
-
-type sepStr struct {
-	str1  string
-	str2  string
-	index int
-}
 
 func Task() {
 	// Раскомментить при запуске на своей машине, закомментить при отправке на платформу
 	// В папку tests скопировать тесты с платформы
 	// Использовать для тестирования на своей машине, используя данные из указанного файла
-	file, err := os.Open("../tests/1")
+	file, err := os.Open("./tests/1")
 	if err != nil {
 		fmt.Printf("Ошибка открытия файла: %s\n", err.Error())
 	}
@@ -44,62 +40,63 @@ func Run(in *bufio.Reader, out *bufio.Writer) {
 	// Решение t подзадач
 	for range t {
 		// Примеры чтения параметров подзадачи i
-		var n int
-		fmt.Fscanln(in, &n)
-
-		datas := make([]string, n)
+		var k int
+		fmt.Fscanln(in, &k)
+		// Чтение целой строки до переноса
+		str1, _ := in.ReadString('\n')
+		str := strings.Trim(str1, "\r\n")
+		s := strings.Fields(str)
+		n, _ := strconv.Atoi(s[0])
+		m, _ := strconv.Atoi(s[1])
+		datas := make([][]string, n)
 		for i := range n {
-			// Чтение из одной строки нескольких значений, разделённых пробелом
-			// var s string
-			// fmt.Fscan(in, &s)
-			// fmt.Println(s)
-
-			// Чтение целой строки до переноса
-			str1, _ := in.ReadString('\n')
-			// Удаление символа \n (на некоторых машинах надо удалить два символа \r\n)
-			// str := strings.Trim(str1, "\n")
-			str := strings.Trim(str1, "\r\n")
-			// Для избежания ошибки выведем str (закомментить при использовании шаблона)
-			datas[i] = str
+			datas[i] = make([]string, m)
+			strData1, _ := in.ReadString('\n')
+			strData := strings.Trim(strData1, "\r\n")
+			datas[i] = strings.Split(strData, "")
 		}
+
 		// Запуск и вывод в out решения подзадачи t
 		// В зависимости от условия задачи алгоритм вывода может потребовать доработки
 		// fmt.Println("")
 		// fmt.Println("Задача", tt+1)
-		fmt.Fprintln(out, tTaskSolving(datas))
+		fmt.Fprintln(out, tTaskSolving(datas, k))
 	}
 }
 
 // tTaskSolving - функция для решения подзадачи t задачи
 // В зависимости от условия задачи, необходимо указать требуемые аргументы и возвращаемое значение функции
-func tTaskSolving(datas []string) (count int) {
-	count = 0
-	sliceStr := make([]sepStr, len(datas))
-	visitedStr := make(map[int]bool)
-	for i, data := range datas {
-		str1 := make([]rune, 0, len(data)/2+1)
-		str2 := make([]rune, 0, len(data)/2)
-		for j, v := range data {
-			if (j+1)%2 == 0 {
-				str2 = append(str2, v)
-			} else {
-				str1 = append(str1, v)
-			}
-		}
-		sliceStr[i].index = i
-		sliceStr[i].str1 = string(str1)
-		sliceStr[i].str2 = string(str2)
+func tTaskSolving(datas [][]string, k int) (result string) {
+	d := []string{"X", ".", "X", "B"}
+	s := findVictory(d)
+	if s {
+		return "YES"
 	}
-	var dfs func(currentSlice []sepStr)
-	dfs = func(currentSlice []sepStr) {
-		for idx := 1; idx < len(currentSlice); idx++ {
-			if !visitedStr[currentSlice[0].index] && ((len(currentSlice[0].str1) > 0 && currentSlice[0].str1 == currentSlice[idx].str1) || (len(currentSlice[0].str2) > 0 && currentSlice[0].str2 == currentSlice[idx].str2)) {
-				count++
-			}
-			dfs(currentSlice[idx:])
-		}
-		visitedStr[currentSlice[0].index] = true
+	return "NO"
+}
+
+func findVictory(strSlice []string) bool {
+	reg := regexp.MustCompile(`X{3}`)
+	str := strings.Join(strSlice, "")
+	res := reg.MatchString(str)
+	fmt.Println(str)
+	if res {
+		return res
 	}
-	dfs(sliceStr)
-	return count
+	return res
+}
+
+func findPotVictory(strSlice []string) bool {
+	reg1 := regexp.MustCompile(`\.X+`)
+	reg2 := regexp.MustCompile(`X+\.X+`)
+	reg3 := regexp.MustCompile(`X+\.`)
+	str := strings.Join(strSlice, "")
+	res1 := reg1.MatchString(str)
+	res2 := reg2.MatchString(str)
+	res3 := reg3.MatchString(str)
+	fmt.Println(str)
+	if res1 || res2 || res3 {
+		return true
+	}
+	return false
 }

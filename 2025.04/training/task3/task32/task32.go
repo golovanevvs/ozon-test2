@@ -22,6 +22,7 @@ func Task() {
 	if err != nil {
 		fmt.Printf("Ошибка открытия файла: %s\n", err.Error())
 	}
+	defer file.Close()
 	in := bufio.NewReader(file)
 
 	// Раскомментить при отправке на платформу, закомментить при запуске
