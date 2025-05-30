@@ -1,7 +1,9 @@
 package main
 
-import "github.com/golovanevvs/ozon-route-256-contest-go/2025.04/training/task4/task41"
+import (
+	"github.com/golovanevvs/ozon-route-256-contest-go/2025.04/training/task4/task43"
+)
 
 func main() {
-	task41.Task()
+	task43.Task()
 }
