@@ -37,8 +37,12 @@ func TestTask(t *testing.T) {
 			out.Flush()
 			actuals, err := io.ReadAll(bufio.NewReader(&buffer))
 			require.Nil(t, err)
-
-			sliceExpecteds := strings.Split(string(expecteds), "\n")
+			var sliceExpecteds []string
+			if strings.HasSuffix(string(expecteds), "\r\n") {
+				sliceExpecteds = strings.Split(string(expecteds), "\r\n")
+			} else {
+				sliceExpecteds = strings.Split(string(expecteds), "\n")
+			}
 			sliceExpecteds1 := sliceExpecteds[:len(sliceExpecteds)-1]
 			sliceActuals := strings.Split(string(actuals), "\n")
 			sliceActuals1 := sliceActuals[:len(sliceActuals)-1]
@@ -71,7 +75,12 @@ func BenchmarkTask(b *testing.B) {
 		actuals, err := io.ReadAll(bufio.NewReader(&buffer))
 		require.Nil(b, err)
 
-		sliceExpecteds := strings.Split(string(expecteds), "\n")
+		var sliceExpecteds []string
+		if strings.HasSuffix(string(expecteds), "\r\n") {
+			sliceExpecteds = strings.Split(string(expecteds), "\r\n")
+		} else {
+			sliceExpecteds = strings.Split(string(expecteds), "\n")
+		}
 		sliceExpecteds1 := sliceExpecteds[:len(sliceExpecteds)-1]
 		sliceActuals := strings.Split(string(actuals), "\n")
 		sliceActuals1 := sliceActuals[:len(sliceActuals)-1]

@@ -40,7 +40,12 @@ func TestTask(t *testing.T) {
 			results, err := io.ReadAll(bufio.NewReader(&buffer))
 			require.Nil(t, err)
 
-			sliceExpecteds := strings.Split(string(expecteds), "\r\n")
+			var sliceExpecteds []string
+			if strings.HasSuffix(string(expecteds), "\r\n") {
+				sliceExpecteds = strings.Split(string(expecteds), "\r\n")
+			} else {
+				sliceExpecteds = strings.Split(string(expecteds), "\n")
+			}
 			sliceExpecteds1 := sliceExpecteds[:len(sliceExpecteds)-1]
 			sliceResults := strings.Split(string(results), "\r\n")
 			sliceResults1 := sliceResults[:len(sliceResults)-1]
@@ -54,9 +59,3 @@ func TestTask(t *testing.T) {
 	}
 	require.True(t, openAnyFile)
 }
-
-// func BenchmarkTask3(b *testing.B) {
-// 	for i := 0; i < b.N; i++ {
-// 		Task3()
-// 	}
-// }

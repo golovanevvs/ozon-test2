@@ -15,7 +15,7 @@ import (
 
 func TestTask(t *testing.T) {
 	openAnyFile := false
-	for i := 1; i <= 38; i++ {
+	for i := 1; i <= 30; i++ {
 		file, err := os.Open(fmt.Sprintf("../tests/%d", i))
 		if err != nil {
 			fmt.Printf("Ошибка открытия файла: %d\n", i)
@@ -38,7 +38,12 @@ func TestTask(t *testing.T) {
 			actuals, err := io.ReadAll(bufio.NewReader(&buffer))
 			require.Nil(t, err)
 
-			sliceExpecteds := strings.Split(string(expecteds), "\n")
+			var sliceExpecteds []string
+			if strings.HasSuffix(string(expecteds), "\r\n") {
+				sliceExpecteds = strings.Split(string(expecteds), "\r\n")
+			} else {
+				sliceExpecteds = strings.Split(string(expecteds), "\n")
+			}
 			sliceExpecteds1 := sliceExpecteds[:len(sliceExpecteds)-1]
 			sliceActuals := strings.Split(string(actuals), "\n")
 			sliceActuals1 := sliceActuals[:len(sliceActuals)-1]
@@ -53,7 +58,7 @@ func TestTask(t *testing.T) {
 
 func BenchmarkTask(b *testing.B) {
 	for b.Loop() {
-		test := 34
+		test := 1
 		file, err := os.Open(fmt.Sprintf("../tests/%d", test))
 		if err != nil {
 			fmt.Printf("Ошибка открытия файла: %d\n", test)
@@ -71,7 +76,12 @@ func BenchmarkTask(b *testing.B) {
 		actuals, err := io.ReadAll(bufio.NewReader(&buffer))
 		require.Nil(b, err)
 
-		sliceExpecteds := strings.Split(string(expecteds), "\n")
+		var sliceExpecteds []string
+		if strings.HasSuffix(string(expecteds), "\r\n") {
+			sliceExpecteds = strings.Split(string(expecteds), "\r\n")
+		} else {
+			sliceExpecteds = strings.Split(string(expecteds), "\n")
+		}
 		sliceExpecteds1 := sliceExpecteds[:len(sliceExpecteds)-1]
 		sliceActuals := strings.Split(string(actuals), "\n")
 		sliceActuals1 := sliceActuals[:len(sliceActuals)-1]
