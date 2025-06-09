@@ -7,14 +7,14 @@ import (
 	"sort"
 	"strconv"
 	"strings"
+
+	"github.com/goforj/godump"
 )
 
 type image struct {
-	idIm int
-	idSe int
-	vIm  int
-	vSe  int
-	t    int
+	id       int
+	v        int
+	mapIDSeT map[int]int
 }
 
 type server struct {
@@ -22,10 +22,10 @@ type server struct {
 	v  int
 }
 
-type result struct {
-	mapIDImIDSe map[int]int
-	diff        int
-}
+// type result struct {
+// 	mapIDImIDSe map[int]int
+// 	diff        int
+// }
 
 func Task() {
 	file, err := os.Open("./tests/1")
@@ -82,7 +82,7 @@ func run(in *bufio.Reader, out *bufio.Writer) {
 
 func tTaskSolving(n int, ss []string, m int, is []string) string {
 	servers := make([]server, n)
-	for i, v := range is {
+	for i, v := range ss {
 		vInt, _ := strconv.Atoi(v)
 		server := server{
 			id: i,
@@ -99,22 +99,24 @@ func tTaskSolving(n int, ss []string, m int, is []string) string {
 	for i, v := range is {
 		vInt, _ := strconv.Atoi(v)
 		image := image{
-			idIm: i,
-			vIm:  vInt,
+			id: i,
+			v:  vInt,
 		}
 		images[i] = image
 	}
 
 	sort.Slice(images, func(i, j int) bool {
-		return images[i].vIm > images[j].vIm
+		return images[i].v > images[j].v
 	})
 
 	for i, v := range images {
-		for j, w := range servers {
-			t := getTime(v.vIm, w.v)
+		images[i].mapIDSeT = make(map[int]int)
+		for _, w := range servers {
+			images[i].mapIDSeT[w.id] = getTime(v.v, w.v)
 		}
 	}
 
+	godump.Dump(images)
 	return ""
 }
 
