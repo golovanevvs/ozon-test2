@@ -4,13 +4,27 @@ import (
 	"bufio"
 	"fmt"
 	"os"
+	"sort"
 	"strconv"
 	"strings"
 )
 
 type image struct {
-	idImg int
-	s     map[int]int
+	idIm int
+	idSe int
+	vIm  int
+	vSe  int
+	t    int
+}
+
+type server struct {
+	id int
+	v  int
+}
+
+type result struct {
+	mapIDImIDSe map[int]int
+	diff        int
 }
 
 func Task() {
@@ -31,12 +45,10 @@ func Task() {
 func run(in *bufio.Reader, out *bufio.Writer) {
 	var t int
 	fmt.Fscanln(in, &t)
-	fmt.Println(t)
 
 	for range t {
 		var n int
 		fmt.Fscanln(in, &n)
-		fmt.Println(n)
 
 		var ssStr string
 		ssStr1, _ := in.ReadString('\n')
@@ -64,26 +76,46 @@ func run(in *bufio.Reader, out *bufio.Writer) {
 		ss := strings.Fields(ssStr)
 		is := strings.Fields(isStr)
 
-		fmt.Fprintln(out, tTaskSolving(ss, is))
+		fmt.Fprintln(out, tTaskSolving(n, ss, m, is))
 	}
 }
 
-func tTaskSolving(ss []string, is []string) []image {
-	res := make([]image, 0)
+func tTaskSolving(n int, ss []string, m int, is []string) string {
+	servers := make([]server, n)
 	for i, v := range is {
-		ii := image{
-			idImg: i,
-			s:     make(map[int]int),
+		vInt, _ := strconv.Atoi(v)
+		server := server{
+			id: i,
+			v:  vInt,
 		}
-		iInt, _ := strconv.Atoi(v)
-		for j, s := range ss {
-			sInt, _ := strconv.Atoi(s)
-			ii.s[j] = getTime(iInt, sInt)
-		}
-		res = append(res, ii)
+		servers[i] = server
 	}
 
-	return res
+	sort.Slice(servers, func(i, j int) bool {
+		return servers[i].v > servers[j].v
+	})
+
+	images := make([]image, m)
+	for i, v := range is {
+		vInt, _ := strconv.Atoi(v)
+		image := image{
+			idIm: i,
+			vIm:  vInt,
+		}
+		images[i] = image
+	}
+
+	sort.Slice(images, func(i, j int) bool {
+		return images[i].vIm > images[j].vIm
+	})
+
+	for i, v := range images {
+		for j, w := range servers {
+			t := getTime(v.vIm, w.v)
+		}
+	}
+
+	return ""
 }
 
 func getTime(i int, s int) int {
