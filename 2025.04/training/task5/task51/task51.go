@@ -3,18 +3,16 @@ package task51
 import (
 	"bufio"
 	"fmt"
+	"math"
 	"os"
 	"sort"
 	"strconv"
 	"strings"
-
-	"github.com/goforj/godump"
 )
 
 type image struct {
-	id       int
-	v        int
-	mapIDSeT map[int]int
+	id int
+	v  int
 }
 
 type server struct {
@@ -22,13 +20,13 @@ type server struct {
 	v  int
 }
 
-// type result struct {
-// 	mapIDImIDSe map[int]int
-// 	diff        int
-// }
+type result struct {
+	mapIDImIDSe map[int]int
+	diff        int
+}
 
 func Task() {
-	file, err := os.Open("./tests/1")
+	file, err := os.Open("./tests/22")
 	if err != nil {
 		fmt.Printf("Ошибка открытия файла: %v", err)
 		return
@@ -39,10 +37,10 @@ func Task() {
 	out := bufio.NewWriter(os.Stdout)
 	defer out.Flush()
 
-	run(in, out)
+	Run(in, out)
 }
 
-func run(in *bufio.Reader, out *bufio.Writer) {
+func Run(in *bufio.Reader, out *bufio.Writer) {
 	var t int
 	fmt.Fscanln(in, &t)
 
@@ -81,6 +79,10 @@ func run(in *bufio.Reader, out *bufio.Writer) {
 }
 
 func tTaskSolving(n int, ss []string, m int, is []string) string {
+	if len(is) == 1 {
+		return ""
+	}
+
 	servers := make([]server, n)
 	for i, v := range ss {
 		vInt, _ := strconv.Atoi(v)
@@ -109,15 +111,62 @@ func tTaskSolving(n int, ss []string, m int, is []string) string {
 		return images[i].v > images[j].v
 	})
 
-	for i, v := range images {
-		images[i].mapIDSeT = make(map[int]int)
-		for _, w := range servers {
-			images[i].mapIDSeT[w.id] = getTime(v.v, w.v)
+	results := make([]result, 0)
+
+	for i := range servers {
+		result := result{
+			mapIDImIDSe: make(map[int]int),
+		}
+		t0 := getTime(images[0].v, servers[i].v)
+		result.mapIDImIDSe[images[0].id] = servers[i].id
+		resDiffi := 0
+
+		for j := 1; j < len(images); j++ {
+			diffMin := math.MaxInt64
+			var idSe int
+
+			for k := range servers {
+				t := getTime(images[j].v, servers[k].v)
+				var diff int
+				if t == t0 {
+					diffMin = 0
+					idSe = servers[k].id
+					break
+				}
+				if t < t0 {
+					diff = t0 - t
+				} else {
+					diff = t - t0
+				}
+				if diff < diffMin {
+					diffMin = diff
+					idSe = servers[k].id
+				}
+			}
+
+			result.mapIDImIDSe[images[j].id] = idSe
+			if diffMin > resDiffi {
+				resDiffi = diffMin
+			}
+		}
+		result.diff = resDiffi
+		results = append(results, result)
+		if resDiffi == 0 {
+			break
 		}
 	}
+	sort.Slice(results, func(i, j int) bool {
+		return results[i].diff < results[j].diff
+	})
+	resDiff := results[0].diff
+	resSlice := make([]string, m)
+	for i := range resSlice {
+		resSlice[i] = strconv.Itoa(results[0].mapIDImIDSe[i] + 1)
+	}
 
-	godump.Dump(images)
-	return ""
+	resString := strings.Join(resSlice, " ")
+	ress := fmt.Sprintf("%d\n%s ", resDiff, resString)
+	return ress
 }
 
 func getTime(i int, s int) int {
