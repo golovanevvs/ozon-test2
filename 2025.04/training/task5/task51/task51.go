@@ -26,7 +26,7 @@ type result struct {
 }
 
 func Task() {
-	file, err := os.Open("./tests/22")
+	file, err := os.Open("./tests/3")
 	if err != nil {
 		fmt.Printf("Ошибка открытия файла: %v", err)
 		return
@@ -119,11 +119,11 @@ func tTaskSolving(n int, ss []string, m int, is []string) string {
 		}
 		t0 := getTime(images[0].v, servers[i].v)
 		result.mapIDImIDSe[images[0].id] = servers[i].id
-		resDiffi := 0
+		diffMax := 0
 
 		for j := 1; j < len(images); j++ {
 			diffMin := math.MaxInt64
-			var idSe int
+			idSe := 0
 
 			for k := range servers {
 				t := getTime(images[j].v, servers[k].v)
@@ -145,13 +145,13 @@ func tTaskSolving(n int, ss []string, m int, is []string) string {
 			}
 
 			result.mapIDImIDSe[images[j].id] = idSe
-			if diffMin > resDiffi {
-				resDiffi = diffMin
+			if diffMin > diffMax {
+				diffMax = diffMin
 			}
 		}
-		result.diff = resDiffi
+		result.diff = diffMax
 		results = append(results, result)
-		if resDiffi == 0 {
+		if diffMax == 0 {
 			break
 		}
 	}
