@@ -26,7 +26,7 @@ type result struct {
 }
 
 func Task() {
-	file, err := os.Open("./tests/3")
+	file, err := os.Open("./tests/v3")
 	if err != nil {
 		fmt.Printf("Ошибка открытия файла: %v", err)
 		return
