@@ -16,9 +16,6 @@ import (
 func TestTask(t *testing.T) {
 	openAnyFile := false
 	for i := 1; i <= 23; i++ {
-		if i == 12 || i == 13 || i == 14 || i == 15 || i == 20 || i == 21 || i == 22 || i == 23 {
-			continue
-		}
 		file, err := os.Open(fmt.Sprintf("../tests/%d", i))
 		if err != nil {
 			fmt.Printf("Ошибка открытия файла: %d\n", i)
@@ -65,9 +62,6 @@ func TestTask(t *testing.T) {
 func TestTask2(t *testing.T) {
 	openAnyFile := false
 	for i := 1; i <= 23; i++ {
-		if i == 12 || i == 13 || i == 14 || i == 15 || i == 20 || i == 21 || i == 22 || i == 23 {
-			continue
-		}
 		file, err := os.Open(fmt.Sprintf("../tests/%d", i))
 		if err != nil {
 			fmt.Printf("Ошибка открытия файла: %d\n", i)

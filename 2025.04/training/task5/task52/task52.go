@@ -3,20 +3,30 @@ package task52
 import (
 	"bufio"
 	"fmt"
+	"math"
 	"os"
-	"slices"
+	"sort"
 	"strconv"
 	"strings"
 )
 
-type tis struct {
-	iID int
-	sID int
-	t   int
+type image struct {
+	id int
+	v  int
+}
+
+type server struct {
+	id int
+	v  int
+}
+
+type result struct {
+	mapIDImIDSe map[int]int
+	diff        int
 }
 
 func Task() {
-	file, err := os.Open("./tests/12")
+	file, err := os.Open("./tests/v3")
 	if err != nil {
 		fmt.Printf("Ошибка открытия файла: %v", err)
 		return
@@ -73,62 +83,90 @@ func tTaskSolving(n int, ss []string, m int, is []string) string {
 		return ""
 	}
 
-	servers := make([]int, n)
+	servers := make([]server, n)
 	for i, v := range ss {
-		servers[i], _ = strconv.Atoi(v)
-	}
-
-	images := make([]int, m)
-	for i, v := range is {
-		images[i], _ = strconv.Atoi(v)
-	}
-
-	tiss := make([][]tis, m)
-
-	for ii := range tiss {
-		tiss[ii] = make([]tis, n)
-		for is := range tiss[ii] {
-			tiss[ii][is].iID = ii
-			tiss[ii][is].sID = is
-			tiss[ii][is].t = getTime(images[ii], servers[is])
+		vInt, _ := strconv.Atoi(v)
+		server := server{
+			id: i,
+			v:  vInt,
 		}
+		servers[i] = server
 	}
 
-	allCombs := [][]tis{{}}
-	for _, column := range tiss {
-		var newCombs [][]tis
-		for _, value := range column {
-			for _, comb := range allCombs {
-				newComb := append([]tis{}, comb...)
-				newComb = append(newComb, value)
-				newCombs = append(newCombs, newComb)
+	sort.Slice(servers, func(i, j int) bool {
+		return servers[i].v > servers[j].v
+	})
+
+	images := make([]image, m)
+	for i, v := range is {
+		vInt, _ := strconv.Atoi(v)
+		image := image{
+			id: i,
+			v:  vInt,
+		}
+		images[i] = image
+	}
+
+	sort.Slice(images, func(i, j int) bool {
+		return images[i].v > images[j].v
+	})
+
+	results := make([]result, 0)
+
+	for i := range servers {
+		result := result{
+			mapIDImIDSe: make(map[int]int),
+		}
+		t0 := getTime(images[0].v, servers[i].v)
+		result.mapIDImIDSe[images[0].id] = servers[i].id
+		diffMax := 0
+
+		for j := 1; j < len(images); j++ {
+			diffMin := math.MaxInt64
+			idSe := 0
+
+			for k := range servers {
+				t := getTime(images[j].v, servers[k].v)
+				var diff int
+				if t == t0 {
+					diffMin = 0
+					idSe = servers[k].id
+					break
+				}
+				if t < t0 {
+					diff = t0 - t
+				} else {
+					diff = t - t0
+				}
+				if diff < diffMin {
+					diffMin = diff
+					idSe = servers[k].id
+				}
+			}
+
+			result.mapIDImIDSe[images[j].id] = idSe
+			if diffMin > diffMax {
+				diffMax = diffMin
 			}
 		}
-		allCombs = newCombs
+		result.diff = diffMax
+		results = append(results, result)
+		if diffMax == 0 {
+			break
+		}
+	}
+	sort.Slice(results, func(i, j int) bool {
+		return results[i].diff < results[j].diff
+	})
+	resDiff := results[0].diff
+	resSlice := make([]string, m)
+	for i := range resSlice {
+		resSlice[i] = strconv.Itoa(results[0].mapIDImIDSe[i] + 1)
 	}
 
-	diffs := make([]int, 0)
-
-	for _, v := range allCombs {
-		max := slices.MaxFunc(v, func(a, b tis) int {
-			return a.t - b.t
-		})
-		min := slices.MinFunc(v, func(a, b tis) int {
-			return a.t - b.t
-		})
-		diff := max.t - min.t
-		diffs = append(diffs, diff)
-	}
-
-	minDiff := slices.Min(diffs)
-	minDiffIndex := slices.Index(diffs, minDiff)
-	resMinDiff := allCombs[minDiffIndex]
-	var resSe string
-	for _, v := range resMinDiff {
-		resSe += strconv.Itoa(v.sID+1) + " "
-	}
-	res := fmt.Sprintf("%d\n%s", minDiff, resSe)
-	return res
+	resString := strings.Join(resSlice, " ")
+	ress := fmt.Sprintf("%d\n%s ", resDiff, resString)
+	return ress
 }
 
 func getTime(i int, s int) int {
